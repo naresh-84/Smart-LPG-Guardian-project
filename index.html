@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart LPG Guardian</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #070d1d;
+    color: #ffffff;
+}
+
+header {
+    background: #101a30;
+    padding: 20px;
+    border-bottom: 1px solid #26334c;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 23px;
+    color: #50d8ff;
+}
+
+header p {
+    margin-bottom: 0;
+    color: #aab8d0;
+    font-size: 13px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 16px;
+}
+
+.connection {
+    background: #111d32;
+    border: 1px solid #263853;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 7px;
+    border: 1px solid #465570;
+    background: #091326;
+    color: white;
+    font-size: 16px;
+}
+
+button {
+    background: #06b6d4;
+    color: #00121c;
+    border: none;
+    border-radius: 7px;
+    padding: 12px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+button:hover {
+    background: #67e8f9;
+}
+
+.status {
+    margin-top: 12px;
+    color: #ffbd69;
+    overflow-wrap: anywhere;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.card {
+    background: #111d32;
+    border: 1px solid #263853;
+    border-radius: 12px;
+    padding: 18px;
+    min-height: 125px;
+}
+
+.card h3 {
+    color: #9eacc5;
+    font-size: 13px;
+    margin-top: 0;
+}
+
+.value {
+    font-size: 27px;
+    font-weight: bold;
+    color: #58dcff;
+    overflow-wrap: anywhere;
+}
+
+.unit {
+    font-size: 14px;
+    color: #aab8d0;
+}
+
+.section-title {
+    margin: 24px 0 12px;
+    font-size: 19px;
+}
+
+.alert {
+    padding: 16px;
+    border-radius: 10px;
+    margin-top: 16px;
+    background: #17253b;
+    border: 1px solid #40516c;
+    overflow-wrap: anywhere;
+}
+
+.warning {
+    background: #431c25;
+    border-color: #ff5964;
+    color: #ffb3ba;
+}
+
+.good {
+    background: #103526;
+    border-color: #36c98f;
+    color: #8df0c2;
+}
+
+footer {
+    text-align: center;
+    padding: 24px;
+    color: #8493ad;
+    font-size: 12px;
+}
+
+@media (max-width: 520px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🛡️ Smart LPG Guardian</h1>
+    <p>ESP32-Based LPG Monitoring Dashboard</p>
+</header>
+
+<main class="container">
+
+    <section class="connection">
+        <h2>📡 ESP32 Connection</h2>
+
+        <label for="ip">ESP32 IP Address</label>
+        <input
+            id="ip"
+            type="text"
+            placeholder="Example: 192.168.1.100"
+            value=""
+        >
+
+        <button id="connectButton" type="button">
+            Connect to ESP32
+        </button>
+
+        <div id="connectionStatus" class="status" role="status">
+            ESP32 not connected. Enter the IP address shown in Arduino Serial Monitor.
+        </div>
+    </section>
+
+    <h2 class="section-title">📊 Live Sensor Readings</h2>
+
+    <section class="grid">
+
+        <div class="card">
+            <h3>🌡️ TEMPERATURE</h3>
+            <div class="value" id="temperature">--</div>
+            <span class="unit">°C</span>
+        </div>
+
+        <div class="card">
+            <h3>💧 HUMIDITY</h3>
+            <div class="value" id="humidity">--</div>
+            <span class="unit">%</span>
+        </div>
+
+        <div class="card">
+            <h3>🔥 GAS SENSOR ADC</h3>
+            <div class="value" id="gas">--</div>
+            <span class="unit">Raw ADC reading</span>
+        </div>
+
+        <div class="card">
+            <h3>⚖️ CYLINDER WEIGHT</h3>
+            <div class="value" id="weight">--</div>
+            <span class="unit">kg</span>
+        </div>
+
+    </section>
+
+    <h2 class="section-title">🛢️ LPG Cylinder Status</h2>
+
+    <section class="grid">
+
+        <div class="card">
+            <h3>LPG REMAINING</h3>
+            <div class="value" id="remaining">--</div>
+            <span class="unit">kg</span>
+        </div>
+
+        <div class="card">
+            <h3>LPG LEVEL</h3>
+            <div class="value" id="percentage">--</div>
+            <span class="unit">%</span>
+        </div>
+
+        <div class="card">
+            <h3>DAILY CONSUMPTION</h3>
+            <div class="value" id="consumption">--</div>
+            <span class="unit">kg/day</span>
+        </div>
+
+        <div class="card">
+            <h3>DAYS REMAINING</h3>
+            <div class="value" id="days">--</div>
+            <span class="unit">days</span>
+        </div>
+
+    </section>
+
+    <div id="safetyStatus" class="alert">
+        Safety status: Waiting for sensor data.
+    </div>
+
+    <div class="alert">
+        <strong>📅 Cylinder Booking Reminder</strong>
+        <p id="booking">Connect the ESP32 and configure cylinder weights to calculate estimates.</p>
+    </div>
+
+    <div class="alert">
+        <strong>Last Updated:</strong>
+        <span id="updated">Not available</span>
+    </div>
+
+</main>
+
+<footer>
+    Smart LPG Guardian | ESP32 Sensor Monitoring Prototype
+    <br><br>
+    This prototype is not a certified LPG leak detector.
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let timer = null;
+let requestInProgress = false;
+
+function showStatus(message, type = "") {
+    const box = $("safetyStatus");
+    box.textContent = message;
+    box.className = "alert " + type;
+}
+
+function displayValue(id, value, decimals = 1) {
+    if (value === null || value === undefined ||
+        value === "" || !Number.isFinite(Number(value))) {
+        $(id).textContent = "--";
+        return;
+    }
+
+    $(id).textContent = Number(value).toFixed(decimals);
+}
+
+function getNumber(data, keys) {
+    for (const key of keys) {
+        const value = data[key];
+
+        if (value !== null && value !== undefined &&
+            value !== "" && Number.isFinite(Number(value))) {
+            return Number(value);
+        }
+    }
+
+    return null;
+}
+
+function formatNumber(value, decimals = 1) {
+    return value === null ? "--" : value.toFixed(decimals);
+}
+
+async function updateSensors() {
+    if (requestInProgress) return;
+
+    const ip = $("ip").value.trim()
+        .replace(/^https?:\/\//i, "")
+        .replace(/\/+$/, "");
+
+    if (!ip) {
+        $("connectionStatus").textContent =
+            "Enter the ESP32 IP address first.";
+        return;
+    }
+
+    if (/[/?#\s]/.test(ip)) {
+        $("connectionStatus").textContent =
+            "Enter only the ESP32 IP address.";
+        return;
+    }
+
+    requestInProgress = true;
+    $("connectionStatus").textContent = "Connecting...";
+
+    try {
+        const response = await fetch(
+            "http://" + ip + "/api/status",
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        $("connectionStatus").textContent =
+            "Connected to ESP32. Sensor data received.";
+
+        displayValue(
+            "temperature",
+            getNumber(data, ["temperature", "temp"])
+        );
+
+        displayValue(
+            "humidity",
+            getNumber(data, ["humidity"])
+        );
+
+        const gas = getNumber(data, ["gas_adc", "gasValue", "gas"]);
+
+        displayValue("gas", gas, 0);
+
+        const weight = getNumber(data, ["weight_kg", "weightKg"]);
+
+        displayValue("weight", weight, 2);
+
+        /*
+          LPG remaining calculations require a calibrated load cell
+          and the empty-cylinder (tare) weight.
+          Never treat raw gas ADC values as certified ppm.
+        */
+
+        const calibrated =
+            data.load_cell_calibrated === true;
+
+        if (weight !== null && calibrated) {
+            $("remaining").textContent =
+                "Configure tare weight";
+            $("percentage").textContent = "--";
+        } else {
+            $("remaining").textContent = "--";
+            $("percentage").textContent = "--";
+        }
+
+        $("consumption").textContent = "--";
+        $("days").textContent = "--";
+
+        $("booking").textContent =
+            "Consumption history and calibrated cylinder weights are needed to estimate a booking date.";
+
+        const thresholdExceeded =
+            data.gas_threshold_exceeded === true;
+
+        if (gas !== null && gas >= 4090) {
+            showStatus(
+                "WARNING: Gas ADC is near maximum. Check sensor wiring and voltage. This reading alone does not confirm an LPG leak.",
+                "warning"
+            );
+        } else if (thresholdExceeded) {
+            showStatus(
+                "CAUTION: The configured example gas threshold is exceeded. Check the sensor and environment safely.",
+                "warning"
+            );
+        } else if (gas !== null) {
+            showStatus(
+                "Sensor data received. Raw ADC is not a calibrated gas concentration.",
+                "good"
+            );
+        } else {
+            showStatus(
+                "Connected, but gas sensor data is missing."
+            );
+        }
+
+        $("updated").textContent =
+            new Date().toLocaleString();
+
+    } catch (error) {
+        $("connectionStatus").textContent =
+            "Connection failed: " + error.message +
+            ". Check the IP, Wi-Fi, and browser connection permissions.";
+
+        showStatus(
+            "No live data received. Dashboard values are unavailable.",
+            "warning"
+        );
+    } finally {
+        requestInProgress = false;
+    }
+}
+
+function connectESP32() {
+    if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+    }
+
+    updateSensors();
+    timer = setInterval(updateSensors, 5000);
+}
+
+$("connectButton").addEventListener("click", connectESP32);
+
+$("ip").addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        connectESP32();
+    }
+});
+</script>
+
+</body>
+</html>
